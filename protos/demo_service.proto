@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package demo_rpc;
+
+service DemoSvc {
+    rpc registerUser (RegisterUser) returns (UserResponse);
+    rpc getUser (GetUser) returns (UserResponse);
+}
+
+message GetUser {}
+
+message RegisterUser {
+    string name = 1;
+    string email = 2;
+    string password = 3;
+    int32 number = 4;
+}
+
+message UserResponse {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string token = 4;
+}

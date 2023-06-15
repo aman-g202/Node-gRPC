@@ -1,0 +1,47 @@
+
+npm install -g grpc-tools
+
+grpc_tools_node_protoc \
+    --js_out=import_style=commonjs,binary:Service1/proto/ \
+    --grpc_out=grpc_js:Service1/proto \
+    --proto_path=./protos ./protos/*.proto
+
+This will create the static compiled proto files for serliazing and deserlizing the messages, which we can import use directly
+
+Second method is to load and compile proto files during start of server using "npm i @grpc/proto-loader"
+
+Secure communication with mutual SSL/TLS -
+
+# Generate server certificate and key
+openssl req -x509 -newkey rsa:4096 -nodes -keyout server.key -out server.crt -subj "/CN=localhost" -days 365
+
+# Generate client certificate and key
+openssl req -x509 -newkey rsa:4096 -nodes -keyout client.key -out client.crt -subj "/CN=localhost" -days 365
+
+// SERVER
+const fs = require('fs');
+const grpc = require('grpc');
+
+const server = new grpc.Server();
+const credentials = grpc.ServerCredentials.createSsl(
+  fs.readFileSync('server.crt'), 
+  [{
+    cert_chain: fs.readFileSync('server.crt'),
+    private_key: fs.readFileSync('server.key')
+  }],
+  true
+);
+server.bind('0.0.0.0:50051', credentials);
+server.start();
+
+// CLIENT
+const fs = require('fs');
+const grpc = require('grpc');
+
+const credentials = grpc.credentials.createSsl(
+  fs.readFileSync('client.crt'), 
+  fs.readFileSync('client.key'), 
+  fs.readFileSync('server.crt')
+);
+const client = new MyServiceClient('example.com:50051', credentials);
+
